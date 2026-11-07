@@ -1,0 +1,6 @@
+target/
+lib/bluej.jar
+*.iml
+.idea/
+.vscode/
+.DS_Store
