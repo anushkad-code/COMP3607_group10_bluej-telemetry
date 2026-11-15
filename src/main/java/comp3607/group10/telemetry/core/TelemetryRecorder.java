@@ -1,5 +1,6 @@
 package comp3607.group10.telemetry.core;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import comp3607.group10.telemetry.model.ClassSnapshot;
@@ -24,6 +25,13 @@ public class TelemetryRecorder {
     public void record(TelemetryEvent event) {
         flushEdits();
         hub.notifyObservers(withCompileInterval(event));
+    }
+
+    public void projectOpened(TelemetryEvent openEvent, Path projectFolder) {
+        if (projectFolder != null) {
+            session.setProjectFolder(projectFolder);
+        }
+        record(openEvent);
     }
 
     public void baseline(List<ClassSnapshot> snapshots) {

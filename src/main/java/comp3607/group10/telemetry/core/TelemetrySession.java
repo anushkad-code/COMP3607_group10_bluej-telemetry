@@ -1,5 +1,6 @@
 package comp3607.group10.telemetry.core;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ public class TelemetrySession implements TelemetryObserver {
     private final String studentId;
     private final long startMillis;
     private Long endMillis;
+    private Path projectFolder;
     private final List<TelemetryEvent> events = new ArrayList<TelemetryEvent>();
 
     public TelemetrySession(String studentId, long startMillis) {
@@ -28,6 +30,14 @@ public class TelemetrySession implements TelemetryObserver {
 
     public boolean isEnded() {
         return endMillis != null;
+    }
+
+    public void setProjectFolder(Path projectFolder) {
+        this.projectFolder = projectFolder;
+    }
+
+    public Path getProjectFolder() {
+        return projectFolder;
     }
 
     public String getStudentId() {
