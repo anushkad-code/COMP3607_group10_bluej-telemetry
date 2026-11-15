@@ -1,5 +1,6 @@
 package comp3607.group10.telemetry.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import comp3607.group10.telemetry.core.TelemetryRecorder;
@@ -11,7 +12,7 @@ public class BaselineClassesCommand implements Command {
 
     public BaselineClassesCommand(TelemetryRecorder recorder, List<ClassSnapshot> snapshots) {
         this.recorder = recorder;
-        this.snapshots = List.copyOf(snapshots);
+        this.snapshots = new ArrayList<ClassSnapshot>(snapshots);
     }
 
     @Override
