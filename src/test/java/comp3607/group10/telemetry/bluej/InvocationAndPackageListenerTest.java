@@ -1,5 +1,6 @@
 package comp3607.group10.telemetry.bluej;
 
+import java.io.File;
 import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -63,6 +64,7 @@ public class InvocationAndPackageListenerTest {
         listener.packageClosing(packageEvent(bPackage));
         assertEquals(Arrays.asList(EventType.PROJECT_OPENED, EventType.PROJECT_CLOSED), support.runQueuedTypes());
 
+        assertEquals(new File("/home/jane/Shapes").toPath(), support.session.getProjectFolder());
         support.context.getRecorder().classStateChanged(new ClassSnapshot("Circle", true, false, Arrays.asList()), 5L);
         assertEquals(3, support.session.getEvents().size());
     }
@@ -76,6 +78,7 @@ public class InvocationAndPackageListenerTest {
                 .packageOpened(packageEvent(broken));
         TelemetryEvent opened = support.runQueued().get(0);
         assertEquals("unknown", opened.getDetail(DetailKeys.PROJECT));
+        assertNull(support.session.getProjectFolder());
     }
 
     private static InvocationFinishedEvent run(InvocationFinishedEvent.EventType type, String method) {
@@ -89,6 +92,7 @@ public class InvocationAndPackageListenerTest {
     private static BPackage packageNamed(String name) throws Exception {
         BProject project = mock(BProject.class);
         when(project.getName()).thenReturn(name);
+        when(project.getDir()).thenReturn(new File("/home/jane/" + name));
         BPackage bPackage = mock(BPackage.class);
         when(bPackage.getProject()).thenReturn(project);
         return bPackage;
