@@ -3,6 +3,8 @@ package comp3607.group10.telemetry.core;
 import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +35,15 @@ public class TelemetryRecorderTest {
         List<TelemetryEvent> events = session.getEvents();
         assertNull(events.get(0).getDetail(DetailKeys.MS_SINCE_PREVIOUS_COMPILE));
         assertEquals("15000", events.get(1).getDetail(DetailKeys.MS_SINCE_PREVIOUS_COMPILE));
+    }
+
+    @Test
+    public void openingAProjectRemembersItsFolder() {
+        Path folder = Paths.get("UseCase1");
+        recorder.projectOpened(new TelemetryEvent(EventType.PROJECT_OPENED, 1000L, null), folder);
+        recorder.projectOpened(new TelemetryEvent(EventType.PROJECT_OPENED, 2000L, null), null);
+        assertEquals(folder, session.getProjectFolder());
+        assertEquals(2, session.getEvents().size());
     }
 
     @Test
