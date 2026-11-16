@@ -6,14 +6,32 @@ import java.util.List;
 import bluej.extensions2.BClass;
 import bluej.extensions2.editor.JavaEditor;
 
+/**
+Attaches exactly one EditDocumentListener to each class editor, and remembers which classes
+already have one.
+
+@author Anushka Dwarika
+*/
 class EditorAttacher {
+    /** The shared objects every listener needs. */
     private final ListenerContext context;
+    /** The names of the classes whose editors already have a listener. */
     private final List<String> attached = new ArrayList<String>();
 
+    /**
+    Creates the attacher.
+
+    @param context the shared objects every listener needs
+    */
     EditorAttacher(ListenerContext context) {
         this.context = context;
     }
 
+    /**
+    Attaches an edit listener to the class's editor, unless it already has one.
+
+    @param bClass the BlueJ class
+    */
     synchronized void attach(BClass bClass) {
         String name = bClass.getName();
         if (attached.contains(name)) {
@@ -26,20 +44,43 @@ class EditorAttacher {
         }
     }
 
+    /**
+    Updates the remembered name after a class is renamed.
+
+    @param oldName the old class name
+    @param newName the new class name
+    */
     synchronized void renamed(String oldName, String newName) {
         if (attached.remove(oldName)) {
             attached.add(newName);
         }
     }
 
+    /**
+    Forgets a class after it is removed.
+
+    @param className the name of the class
+    */
     synchronized void forget(String className) {
         attached.remove(className);
     }
 
+    /**
+    Tells whether a class's editor already has a listener.
+
+    @param className the name of the class
+    @return true if it is attached
+    */
     synchronized boolean isAttached(String className) {
         return attached.contains(className);
     }
 
+    /**
+    Gets the Java editor for a class.
+
+    @param bClass the BlueJ class
+    @return the editor, or null if the class has none
+    */
     private static JavaEditor editorOf(BClass bClass) {
         try {
             return bClass.getJavaEditor();
@@ -59,4 +100,5 @@ SourceMaking. Command Design Pattern. https://sourcemaking.com/design_patterns/c
 BlueJ. Writing Extensions for BlueJ 5+. https://www.bluej.org/extensions/writingextensions2.html
 BlueJ / King's College London. BlueJ source code, Extensions API package bluej.extensions2. https://github.com/k-pet-group/BlueJ-Greenfoot
 Oracle. Java SE 21 API Specification. https://docs.oracle.com/en/java/javase/21/docs/api/
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */

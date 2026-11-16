@@ -7,7 +7,17 @@ import javafx.application.Platform;
 
 import comp3607.group10.telemetry.command.ReportsWrittenListener;
 
+/**
+Shows a message listing the report files after a manual export.
+
+@author Anushka Dwarika
+*/
 public class ExportedFilesMessage implements ReportsWrittenListener {
+    /**
+    Shows the file paths in a dialog on BlueJ's screen thread.
+
+    @param files the files that were written
+    */
     @Override
     public void reportsWritten(List<Path> files) {
         String list = "";
@@ -28,4 +38,5 @@ Fowler, M. (2018). Refactoring: Improving the Design of Existing Code (2nd ed.).
 SourceMaking. Observer Design Pattern. https://sourcemaking.com/design_patterns/observer
 Oracle. Java SE 21 API Specification. https://docs.oracle.com/en/java/javase/21/docs/api/
 OpenJFX. JavaFX 21 API. https://openjfx.io/javadoc/21/
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */

@@ -6,15 +6,33 @@ import javafx.scene.control.MenuItem;
 
 import comp3607.group10.telemetry.TelemetryService;
 
+/**
+Adds the Export Telemetry Report item to BlueJ's Tools menu.
+
+@author Anushka Dwarika
+*/
 public class TelemetryMenuGenerator extends MenuGenerator {
+    /** The text of the menu item. */
     static final String MENU_LABEL = "Export Telemetry Report";
 
+    /** The telemetry service the menu item exports from. */
     private final TelemetryService service;
 
+    /**
+    Creates the menu generator.
+
+    @param service the telemetry service
+    */
     public TelemetryMenuGenerator(TelemetryService service) {
         this.service = service;
     }
 
+    /**
+    Creates the Tools menu item.
+
+    @param bPackage the BlueJ package
+    @return the menu item
+    */
     @Override
     public MenuItem getToolsMenuItem(BPackage bPackage) {
         MenuItem item = new MenuItem(MENU_LABEL);
@@ -33,4 +51,5 @@ SourceMaking. Command Design Pattern. https://sourcemaking.com/design_patterns/c
 BlueJ. Writing Extensions for BlueJ 5+. https://www.bluej.org/extensions/writingextensions2.html
 BlueJ / King's College London. BlueJ source code, Extensions API package bluej.extensions2. https://github.com/k-pet-group/BlueJ-Greenfoot
 OpenJFX. JavaFX 21 API. https://openjfx.io/javadoc/21/
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */
