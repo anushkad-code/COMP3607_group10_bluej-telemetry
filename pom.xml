@@ -151,6 +151,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.12.0</version>
+                <configuration>
+                    <show>private</show>
+                    <doclint>all</doclint>
+                    <doctitle>BlueJ Telemetry Extension 1.0.0 API</doctitle>
+                    <windowtitle>BlueJ Telemetry Extension API</windowtitle>
+                    <outputDirectory>${project.basedir}/docs</outputDirectory>
+                    <reportOutputDirectory>${project.basedir}/docs</reportOutputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
@@ -164,4 +177,6 @@ Mockito. Mockito documentation. https://javadoc.io/doc/org.mockito/mockito-core/
 EclEmma. JaCoCo Java Code Coverage Library. https://www.jacoco.org/jacoco/
 Apache Maven. Guide to Naming Conventions on groupId, artifactId and version. https://maven.apache.org/guides/mini/guide-naming-conventions.html
 Oracle. The Java Tutorials: Naming a Package. https://docs.oracle.com/javase/tutorial/java/package/namingpkgs.html
+Apache Maven. Maven Javadoc Plugin. https://maven.apache.org/plugins/maven-javadoc-plugin/
+Oracle. The javadoc Command. https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html
 -->
