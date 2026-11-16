@@ -12,19 +12,42 @@ import comp3607.group10.telemetry.model.EventTimeComparator;
 import comp3607.group10.telemetry.model.EventType;
 import comp3607.group10.telemetry.model.TelemetryEvent;
 
+/**
+Works out every figure in the reports from the session's events: active and idle time, compile
+and run counts, error frequencies, typing speed and the class and method timeline.
+
+@author Haeley Parbhoo
+*/
 public class StatisticsCalculator {
+    /** Gaps longer than this many milliseconds (60 seconds) count as idle time. */
     public static final long DEFAULT_IDLE_THRESHOLD_MILLIS = 60000;
 
+    /** The gap after which time counts as idle. */
     private final long idleThresholdMillis;
 
+    /**
+    Creates a calculator with a chosen idle threshold.
+
+    @param idleThresholdMillis the gap after which time counts as idle, in milliseconds
+    */
     public StatisticsCalculator(long idleThresholdMillis) {
         this.idleThresholdMillis = idleThresholdMillis;
     }
 
+    /**
+    Creates a calculator that counts gaps over 60 seconds as idle.
+    */
     public StatisticsCalculator() {
         this(DEFAULT_IDLE_THRESHOLD_MILLIS);
     }
 
+    /**
+    Calculates every figure for a session.
+
+    @param session the session being reported on
+    @param endMillis the end time of the session in epoch milliseconds
+    @return the statistics
+    */
     public SessionStatistics calculate(TelemetrySession session, long endMillis) {
         List<TelemetryEvent> events = sortedByTime(session.getEvents());
         long start = session.getStartMillis();
@@ -33,16 +56,36 @@ public class StatisticsCalculator {
                 errorFrequency(events), timeline(events), projectNames(events));
     }
 
+    /**
+    Counts successful and failed compilations.
+
+    @param events the events recorded in the session
+    @return the compile statistics
+    */
     CompileStats compileStats(List<TelemetryEvent> events) {
         return new CompileStats(count(events, EventType.COMPILE_SUCCEEDED), count(events, EventType.COMPILE_FAILED),
                 averageCompileIntervalSec(events));
     }
 
+    /**
+    Counts program runs and runtime exceptions.
+
+    @param events the events recorded in the session
+    @return the run statistics
+    */
     RunStats runStats(List<TelemetryEvent> events) {
         int exceptions = count(events, EventType.RUNTIME_EXCEPTION);
         return new RunStats(count(events, EventType.PROGRAM_RUN) + exceptions, exceptions);
     }
 
+    /**
+    Works out active time, idle time and editing figures.
+
+    @param events the events recorded in the session
+    @param start the start of the session in epoch milliseconds
+    @param end the end of the session in epoch milliseconds
+    @return the activity statistics
+    */
     ActivityStats activityStats(List<TelemetryEvent> events, long start, long end) {
         long durationMillis = Math.max(0, end - start);
         long activeMillis = Math.min(activeMillis(events, start, end), durationMillis);
@@ -53,6 +96,16 @@ public class StatisticsCalculator {
                 sumDetail(bursts, DetailKeys.KEYSTROKES), typingCadenceCpm(bursts));
     }
 
+    /**
+    Works out how much of the session was active. A gap between events counts as active only if
+    it is no longer than the idle threshold, and time spent typing in an edit burst is always
+    active.
+
+    @param events the events recorded in the session
+    @param start the start of the session in epoch milliseconds
+    @param end the end of the session in epoch milliseconds
+    @return active time in milliseconds
+    */
     long activeMillis(List<TelemetryEvent> events, long start, long end) {
         long active = 0;
         long previous = start;
@@ -69,6 +122,12 @@ public class StatisticsCalculator {
         return active + activeGap(previous, end);
     }
 
+    /**
+    Works out typing speed from the edit bursts.
+
+    @param bursts the edit burst events
+    @return characters per minute, or 0 with no typing
+    */
     double typingCadenceCpm(List<TelemetryEvent> bursts) {
         long typingMillis = sumDetail(bursts, DetailKeys.DURATION_MS);
         if (typingMillis == 0) {
@@ -77,6 +136,12 @@ public class StatisticsCalculator {
         return sumDetail(bursts, DetailKeys.CHARS_INSERTED) / (typingMillis / 60000.0);
     }
 
+    /**
+    Works out the average time between compile starts.
+
+    @param events the events recorded in the session
+    @return the average in seconds, or 0 with fewer than two compiles
+    */
     double averageCompileIntervalSec(List<TelemetryEvent> events) {
         List<TelemetryEvent> starts = eventsOfType(events, EventType.COMPILE_STARTED);
         if (starts.size() < 2) {
@@ -87,6 +152,12 @@ public class StatisticsCalculator {
         return (last - first) / 1000.0 / (starts.size() - 1);
     }
 
+    /**
+    Groups compilation errors by code.
+
+    @param events the events recorded in the session
+    @return the error frequencies, most frequent first
+    */
     List<ErrorFrequency> errorFrequency(List<TelemetryEvent> events) {
         Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
         Map<String, String> examples = new LinkedHashMap<String, String>();
@@ -107,6 +178,12 @@ public class StatisticsCalculator {
         return result;
     }
 
+    /**
+    Lists the projects opened, without repeats.
+
+    @param events the events recorded in the session
+    @return the project names in the order they were opened
+    */
     List<String> projectNames(List<TelemetryEvent> events) {
         List<String> names = new ArrayList<String>();
         for (TelemetryEvent event : events) {
@@ -120,6 +197,12 @@ public class StatisticsCalculator {
         return names;
     }
 
+    /**
+    Builds the class and method timeline.
+
+    @param events the events recorded in the session
+    @return the timeline entries in the order they were recorded
+    */
     List<TimelineEntry> timeline(List<TelemetryEvent> events) {
         List<TimelineEntry> entries = new ArrayList<TimelineEntry>();
         for (TelemetryEvent event : events) {
@@ -131,6 +214,14 @@ public class StatisticsCalculator {
         return entries;
     }
 
+    /**
+    Gives the length of a gap if it counts as active, or 0 if it is longer than the idle
+    threshold.
+
+    @param from the time the gap starts, in milliseconds
+    @param to the time the gap ends, in milliseconds
+    @return the active part of the gap in milliseconds
+    */
     private long activeGap(long from, long to) {
         long gap = to - from;
         if (gap > 0 && gap <= idleThresholdMillis) {
@@ -139,6 +230,13 @@ public class StatisticsCalculator {
         return 0;
     }
 
+    /**
+    Gives when an edit burst ended.
+
+    @param event the telemetry event
+    @param end the end of the session in epoch milliseconds
+    @return the end time of the burst in milliseconds
+    */
     private static long burstEnd(TelemetryEvent event, long end) {
         long last = event.getTimestampMillis();
         String duration = event.getDetail(DetailKeys.DURATION_MS);
@@ -148,14 +246,36 @@ public class StatisticsCalculator {
         return Math.min(last, end);
     }
 
+    /**
+    Keeps a value between a minimum and a maximum.
+
+    @param value the detail value
+    @param min the smallest allowed value
+    @param max the largest allowed value
+    @return the value, kept inside the range
+    */
     private static long clamp(long value, long min, long max) {
         return Math.max(min, Math.min(max, value));
     }
 
+    /**
+    Counts the events of one type.
+
+    @param events the events recorded in the session
+    @param type the kind of event
+    @return how many events have that type
+    */
     private static int count(List<TelemetryEvent> events, EventType type) {
         return eventsOfType(events, type).size();
     }
 
+    /**
+    Adds up a number stored in the events' details.
+
+    @param events the events recorded in the session
+    @param key the detail name, one of the DetailKeys constants
+    @return the total of the detail across the events
+    */
     private static int sumDetail(List<TelemetryEvent> events, String key) {
         int sum = 0;
         for (TelemetryEvent event : events) {
@@ -164,6 +284,12 @@ public class StatisticsCalculator {
         return sum;
     }
 
+    /**
+    Reads a whole number, or gives 0 if it is missing or not a number.
+
+    @param value the detail value
+    @return the number, or 0
+    */
     private static int parseIntOrZero(String value) {
         if (value == null) {
             return 0;
@@ -175,6 +301,13 @@ public class StatisticsCalculator {
         }
     }
 
+    /**
+    Picks out the events of one type.
+
+    @param events the events recorded in the session
+    @param type the kind of event
+    @return the matching events in their original order
+    */
     private static List<TelemetryEvent> eventsOfType(List<TelemetryEvent> events, EventType type) {
         List<TelemetryEvent> matching = new ArrayList<TelemetryEvent>();
         for (TelemetryEvent event : events) {
@@ -185,6 +318,12 @@ public class StatisticsCalculator {
         return matching;
     }
 
+    /**
+    Gives a copy of the events sorted by time.
+
+    @param events the events recorded in the session
+    @return the sorted copy
+    */
     private static List<TelemetryEvent> sortedByTime(List<TelemetryEvent> events) {
         List<TelemetryEvent> sorted = new ArrayList<TelemetryEvent>(events);
         Collections.sort(sorted, new EventTimeComparator());
@@ -202,4 +341,5 @@ COMP 3607 (n.d.). Lab tutorials and code samples: Command (Light, LightOnCommand
 Fowler, M. (2018). Refactoring: Improving the Design of Existing Code (2nd ed.). Addison-Wesley.
 Oracle. Java SE 21 API Specification. https://docs.oracle.com/en/java/javase/21/docs/api/
 Oracle. The Java Tutorials: Exceptions (Catching and Handling Exceptions). https://docs.oracle.com/javase/tutorial/essential/exceptions/handling.html
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */
