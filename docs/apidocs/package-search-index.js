@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"comp3607.group10.telemetry"},{"l":"comp3607.group10.telemetry.analytics"},{"l":"comp3607.group10.telemetry.bluej"},{"l":"comp3607.group10.telemetry.command"},{"l":"comp3607.group10.telemetry.core"},{"l":"comp3607.group10.telemetry.model"},{"l":"comp3607.group10.telemetry.report"}];updateSearchResults();
