@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "studentID": "student-895a086a",
+    "sessionStart": "2026-11-15T15:00:00.000Z",
+    "sessionEnd": "2026-11-15T15:02:31.000Z",
+    "sessionDurationSec": 151,
+    "totalCompilations": 2,
+    "successfulCompilations": 1,
+    "failedCompilations": 1,
+    "totalRuns": 3,
+    "runtimeExceptions": 1,
+    "activeTimeSec": 76,
+    "idleTimeSec": 75,
+    "totalEdits": 37,
+    "typingCadenceCpm": 303.43,
+    "averageCompileIntervalSec": 11.0
+  },
+  "events": [
+    {
+      "type": "SESSION_STARTED",
+      "timestamp": "2026-11-15T15:00:00.000Z",
+      "className": null,
+      "details": {}
+    },
+    {
+      "type": "PROJECT_OPENED",
+      "timestamp": "2026-11-15T15:00:03.000Z",
+      "className": "UseCase2",
+      "details": {
+        "project": "UseCase2"
+      }
+    },
+    {
+      "type": "CLASS_CREATED",
+      "timestamp": "2026-11-15T15:00:08.000Z",
+      "className": "Calculator",
+      "details": {}
+    },
+    {
+      "type": "EDIT_BURST",
+      "timestamp": "2026-11-15T15:00:08.000Z",
+      "className": "Calculator",
+      "details": {
+        "keystrokes": "35",
+        "charsInserted": "175",
+        "charsDeleted": "0",
+        "durationMs": "34000"
+      }
+    },
+    {
+      "type": "COMPILE_STARTED",
+      "timestamp": "2026-11-15T15:00:46.000Z",
+      "className": "Calculator",
+      "details": {
+        "fileCount": "1",
+        "file": "Calculator.java"
+      }
+    },
+    {
+      "type": "COMPILE_ERROR",
+      "timestamp": "2026-11-15T15:00:47.000Z",
+      "className": "Calculator",
+      "details": {
+        "file": "Calculator.java",
+        "line": "3",
+        "message": "\u0027;\u0027 expected",
+        "errorCode": "MISSING_SEMICOLON"
+      }
+    },
+    {
+      "type": "COMPILE_FAILED",
+      "timestamp": "2026-11-15T15:00:47.000Z",
+      "className": "Calculator",
+      "details": {
+        "fileCount": "1",
+        "file": "Calculator.java"
+      }
+    },
+    {
+      "type": "EDIT_BURST",
+      "timestamp": "2026-11-15T15:00:53.000Z",
+      "className": "Calculator",
+      "details": {
+        "keystrokes": "2",
+        "charsInserted": "2",
+        "charsDeleted": "0",
+        "durationMs": "1000"
+      }
+    },
+    {
+      "type": "COMPILE_STARTED",
+      "timestamp": "2026-11-15T15:00:57.000Z",
+      "className": "Calculator",
+      "details": {
+        "fileCount": "1",
+        "file": "Calculator.java",
+        "msSincePreviousCompile": "11000"
+      }
+    },
+    {
+      "type": "COMPILE_SUCCEEDED",
+      "timestamp": "2026-11-15T15:00:58.000Z",
+      "className": "Calculator",
+      "details": {
+        "fileCount": "1",
+        "file": "Calculator.java"
+      }
+    },
+    {
+      "type": "METHOD_DEFINED",
+      "timestamp": "2026-11-15T15:00:58.000Z",
+      "className": "Calculator",
+      "details": {
+        "method": "add"
+      }
+    },
+    {
+      "type": "METHOD_DEFINED",
+      "timestamp": "2026-11-15T15:00:58.000Z",
+      "className": "Calculator",
+      "details": {
+        "method": "divide"
+      }
+    },
+    {
+      "type": "PROGRAM_RUN",
+      "timestamp": "2026-11-15T15:02:13.000Z",
+      "className": "Calculator",
+      "details": {
+        "method": "Calculator",
+        "exitType": "NORMAL",
+        "outputSummary": "Calculator on Calculator finished normally"
+      }
+    },
+    {
+      "type": "PROGRAM_RUN",
+      "timestamp": "2026-11-15T15:02:19.000Z",
+      "className": "Calculator",
+      "details": {
+        "method": "add",
+        "exitType": "NORMAL",
+        "outputSummary": "add on Calculator finished normally"
+      }
+    },
+    {
+      "type": "RUNTIME_EXCEPTION",
+      "timestamp": "2026-11-15T15:02:26.000Z",
+      "className": "Calculator",
+      "details": {
+        "method": "divide",
+        "exitType": "EXCEPTION",
+        "outputSummary": "divide on Calculator ended with a runtime exception"
+      }
+    },
+    {
+      "type": "SESSION_ENDED",
+      "timestamp": "2026-11-15T15:02:31.000Z",
+      "className": null,
+      "details": {}
+    }
+  ]
+}

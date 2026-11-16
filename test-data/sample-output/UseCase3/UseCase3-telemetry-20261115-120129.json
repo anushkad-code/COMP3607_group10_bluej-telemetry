@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "studentID": "student-895a086a",
+    "sessionStart": "2026-11-15T16:00:00.000Z",
+    "sessionEnd": "2026-11-15T16:01:29.000Z",
+    "sessionDurationSec": 89,
+    "totalCompilations": 3,
+    "successfulCompilations": 0,
+    "failedCompilations": 3,
+    "totalRuns": 0,
+    "runtimeExceptions": 0,
+    "activeTimeSec": 89,
+    "idleTimeSec": 0,
+    "totalEdits": 49,
+    "typingCadenceCpm": 352.17,
+    "averageCompileIntervalSec": 13.5
+  },
+  "events": [
+    {
+      "type": "SESSION_STARTED",
+      "timestamp": "2026-11-15T16:00:00.000Z",
+      "className": null,
+      "details": {}
+    },
+    {
+      "type": "PROJECT_OPENED",
+      "timestamp": "2026-11-15T16:00:03.000Z",
+      "className": "UseCase3",
+      "details": {
+        "project": "UseCase3"
+      }
+    },
+    {
+      "type": "CLASS_CREATED",
+      "timestamp": "2026-11-15T16:00:08.000Z",
+      "className": "Broken",
+      "details": {}
+    },
+    {
+      "type": "EDIT_BURST",
+      "timestamp": "2026-11-15T16:00:08.000Z",
+      "className": "Broken",
+      "details": {
+        "keystrokes": "45",
+        "charsInserted": "270",
+        "charsDeleted": "0",
+        "durationMs": "44000"
+      }
+    },
+    {
+      "type": "COMPILE_STARTED",
+      "timestamp": "2026-11-15T16:00:56.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java"
+      }
+    },
+    {
+      "type": "COMPILE_ERROR",
+      "timestamp": "2026-11-15T16:00:57.000Z",
+      "className": "Broken",
+      "details": {
+        "file": "Broken.java",
+        "line": "5",
+        "message": "incompatible types: java.lang.String cannot be converted to int",
+        "errorCode": "INCOMPATIBLE_TYPES"
+      }
+    },
+    {
+      "type": "COMPILE_FAILED",
+      "timestamp": "2026-11-15T16:00:57.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java"
+      }
+    },
+    {
+      "type": "EDIT_BURST",
+      "timestamp": "2026-11-15T16:01:05.000Z",
+      "className": "Broken",
+      "details": {
+        "keystrokes": "3",
+        "charsInserted": "0",
+        "charsDeleted": "15",
+        "durationMs": "2000"
+      }
+    },
+    {
+      "type": "COMPILE_STARTED",
+      "timestamp": "2026-11-15T16:01:10.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java",
+        "msSincePreviousCompile": "14000"
+      }
+    },
+    {
+      "type": "COMPILE_ERROR",
+      "timestamp": "2026-11-15T16:01:11.000Z",
+      "className": "Broken",
+      "details": {
+        "file": "Broken.java",
+        "line": "9",
+        "message": "cannot find symbol - variable count",
+        "errorCode": "CANNOT_FIND_SYMBOL"
+      }
+    },
+    {
+      "type": "COMPILE_FAILED",
+      "timestamp": "2026-11-15T16:01:11.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java"
+      }
+    },
+    {
+      "type": "EDIT_BURST",
+      "timestamp": "2026-11-15T16:01:20.000Z",
+      "className": "Broken",
+      "details": {
+        "keystrokes": "1",
+        "charsInserted": "0",
+        "charsDeleted": "24",
+        "durationMs": "0"
+      }
+    },
+    {
+      "type": "COMPILE_STARTED",
+      "timestamp": "2026-11-15T16:01:23.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java",
+        "msSincePreviousCompile": "13000"
+      }
+    },
+    {
+      "type": "COMPILE_ERROR",
+      "timestamp": "2026-11-15T16:01:24.000Z",
+      "className": "Broken",
+      "details": {
+        "file": "Broken.java",
+        "line": "13",
+        "message": "missing return statement",
+        "errorCode": "MISSING_RETURN"
+      }
+    },
+    {
+      "type": "COMPILE_FAILED",
+      "timestamp": "2026-11-15T16:01:24.000Z",
+      "className": "Broken",
+      "details": {
+        "fileCount": "1",
+        "file": "Broken.java"
+      }
+    },
+    {
+      "type": "SESSION_ENDED",
+      "timestamp": "2026-11-15T16:01:29.000Z",
+      "className": null,
+      "details": {}
+    }
+  ]
+}
