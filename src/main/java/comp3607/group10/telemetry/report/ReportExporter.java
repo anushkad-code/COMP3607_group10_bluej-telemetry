@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import comp3607.group10.telemetry.core.TelemetrySession;
+import comp3607.group10.telemetry.model.DetailKeys;
+import comp3607.group10.telemetry.model.EventType;
+import comp3607.group10.telemetry.model.TelemetryEvent;
 
 public class ReportExporter {
     private final List<ReportGenerator> generators;
@@ -14,16 +17,17 @@ public class ReportExporter {
     private final ZoneId zone;
 
     public ReportExporter(List<ReportGenerator> generators, Path outputDirectory, ZoneId zone) {
-        this.generators = List.copyOf(generators);
+        this.generators = new ArrayList<ReportGenerator>(generators);
         this.outputDirectory = outputDirectory;
         this.zone = zone;
     }
 
     public List<Path> export(TelemetrySession session, long endMillis) throws IOException {
-        String baseName = "telemetry-" + session.getStudentId() + "-" + Timestamps.forFileName(endMillis, zone);
+        String baseName = baseName(session, endMillis);
+        Path folder = folderFor(session);
         List<Path> written = new ArrayList<Path>();
         for (ReportGenerator generator : generators) {
-            Path target = outputDirectory.resolve(baseName + "." + generator.fileExtension());
+            Path target = folder.resolve(baseName + "." + generator.fileExtension());
             written.add(generator.generate(session, endMillis, target));
         }
         return written;
@@ -31,6 +35,46 @@ public class ReportExporter {
 
     public Path getOutputDirectory() {
         return outputDirectory;
+    }
+
+    Path folderFor(TelemetrySession session) {
+        if (session.getProjectFolder() != null) {
+            return session.getProjectFolder();
+        }
+        return outputDirectory;
+    }
+
+    String baseName(TelemetrySession session, long endMillis) {
+        String time = Timestamps.forFileName(endMillis, zone);
+        String project = lastProjectName(session.getEvents());
+        if (project == null) {
+            return "telemetry-" + time;
+        }
+        return safeFileName(project) + "-telemetry-" + time;
+    }
+
+    static String lastProjectName(List<TelemetryEvent> events) {
+        String name = null;
+        for (TelemetryEvent event : events) {
+            String project = event.getDetail(DetailKeys.PROJECT);
+            if (event.is(EventType.PROJECT_OPENED) && project != null && !project.trim().isEmpty()) {
+                name = project;
+            }
+        }
+        return name;
+    }
+
+    static String safeFileName(String name) {
+        String safe = "";
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isLetterOrDigit(c) || c == '-' || c == '_' || c == '.') {
+                safe = safe + c;
+            } else {
+                safe = safe + "_";
+            }
+        }
+        return safe;
     }
 }
 
