@@ -10,9 +10,20 @@ import comp3607.group10.telemetry.model.DetailKeys;
 import comp3607.group10.telemetry.model.EventType;
 import comp3607.group10.telemetry.model.TelemetryEvent;
 
+/**
+Remembers each class's methods, so a class creation or a new method is reported only once.
+
+@author Haeley Parbhoo
+*/
 public class ClassTracker {
+    /** The tracked classes by name. */
     private final Map<String, TrackedClass> classes = new HashMap<String, TrackedClass>();
 
+    /**
+    Remembers a class that already existed when the project opened, without reporting it.
+
+    @param snapshot the state of the class at this moment
+    */
     public void baseline(ClassSnapshot snapshot) {
         TrackedClass tracked = classes.get(snapshot.getClassName());
         if (tracked == null) {
@@ -23,6 +34,15 @@ public class ClassTracker {
         tracked.setModified(!snapshot.isCompiled());
     }
 
+    /**
+    Works out which events a class's new state causes: a creation the first time it is seen, a
+    modification when it becomes uncompiled, and a method definition for each new method after a
+    successful compile.
+
+    @param snapshot the state of the class at this moment
+    @param timestampMillis when it happened, in epoch milliseconds
+    @return the events to record, possibly none
+    */
     public List<TelemetryEvent> stateChanged(ClassSnapshot snapshot, long timestampMillis) {
         List<TelemetryEvent> events = new ArrayList<TelemetryEvent>();
         String name = snapshot.getClassName();
@@ -41,6 +61,12 @@ public class ClassTracker {
         return events;
     }
 
+    /**
+    Moves a class's history to its new name.
+
+    @param newName the new class name
+    @param oldName the old class name
+    */
     public void renamed(String newName, String oldName) {
         TrackedClass tracked = classes.remove(oldName);
         if (tracked == null) {
@@ -49,14 +75,33 @@ public class ClassTracker {
         classes.put(newName, tracked);
     }
 
+    /**
+    Forgets a removed class.
+
+    @param className the name of the class
+    */
     public void removed(String className) {
         classes.remove(className);
     }
 
+    /**
+    Tells whether a class is being tracked.
+
+    @param className the name of the class
+    @return true if known
+    */
     public boolean isKnown(String className) {
         return classes.containsKey(className);
     }
 
+    /**
+    Finds the methods that were not there before and forgets methods that were removed.
+
+    @param tracked what is already known about the class
+    @param snapshot the state of the class at this moment
+    @param timestampMillis when it happened, in epoch milliseconds
+    @return a method defined event for each new method
+    */
     private List<TelemetryEvent> newMethods(TrackedClass tracked, ClassSnapshot snapshot, long timestampMillis) {
         List<TelemetryEvent> events = new ArrayList<TelemetryEvent>();
         for (String method : snapshot.getMethodNames()) {
@@ -78,4 +123,5 @@ COMP 3607 (n.d.). Refactoring: Code Smells, Week 9 lecture notes.
 COMP 3607 (n.d.). Lab tutorials and code samples: Command (Light, LightOnCommand, RemoteControl), Week 6 Demo (Composite), Week 7 (Patient), Interface Segregation Principle (Door, TimedDoor) and Coffee Machine (SOLID).
 Fowler, M. (2018). Refactoring: Improving the Design of Existing Code (2nd ed.). Addison-Wesley.
 Oracle. Java SE 21 API Specification. https://docs.oracle.com/en/java/javase/21/docs/api/
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */
