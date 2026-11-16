@@ -1,5 +1,7 @@
 package comp3607.group10.telemetry.bluej;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import bluej.extensions2.event.PackageEvent;
 import bluej.extensions2.event.PackageListener;
 
 import comp3607.group10.telemetry.command.BaselineClassesCommand;
+import comp3607.group10.telemetry.command.ProjectOpenedCommand;
 import comp3607.group10.telemetry.command.RecordEventCommand;
 import comp3607.group10.telemetry.model.ClassSnapshot;
 
@@ -31,7 +34,7 @@ public class PackageTelemetryListener implements PackageListener {
             editors.attach(bClass);
         }
         context.submit(new BaselineClassesCommand(context.getRecorder(), existing));
-        context.submit(new RecordEventCommand(context.getRecorder(), context.getFactory().projectOpened(projectName(bPackage))));
+        context.submit(new ProjectOpenedCommand(context.getRecorder(), context.getFactory().projectOpened(projectName(bPackage)), projectFolder(bPackage)));
     }
 
     @Override
@@ -45,6 +48,18 @@ public class PackageTelemetryListener implements PackageListener {
             return bPackage.getProject().getName();
         } catch (ExtensionException e) {
             return "unknown";
+        }
+    }
+
+    static Path projectFolder(BPackage bPackage) {
+        try {
+            File folder = bPackage.getProject().getDir();
+            if (folder == null) {
+                return null;
+            }
+            return folder.toPath();
+        } catch (ExtensionException e) {
+            return null;
         }
     }
 
