@@ -13,32 +13,67 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
+/**
+A helper over PDFBox that draws the parts of the report (heading, sections, tables, bar charts,
+the pie chart and the footer) and keeps everything within the page limit.
+
+@author Reinaldo Singh
+*/
 public class PdfCanvas implements AutoCloseable {
+    /** The page margin in points. */
     static final float MARGIN = 48;
+    /** The height of one table row in points. */
     static final float ROW_HEIGHT = 15;
+    /** The size of normal text. */
     private static final float TEXT_SIZE = 9.5f;
+    /** The page size: A4. */
     private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
+    /** The colour of normal text. */
     private static final Color INK = new Color(40, 32, 26);
+    /** The colour of headings. */
     private static final Color HEADING = new Color(168, 70, 8);
+    /** The accent colour for the bar under the heading. */
     private static final Color ORANGE = new Color(232, 120, 22);
+    /** The colour of captions and notes. */
     private static final Color SOFT_TEXT = new Color(95, 80, 66);
+    /** The colour of lines and table borders. */
     private static final Color RULE = new Color(226, 196, 140);
+    /** The fill colour of table headings. */
     private static final Color HEADER_FILL = new Color(255, 236, 170);
 
+    /** The PDFBox document being drawn. */
     private final PDDocument document = new PDDocument();
+    /** The normal font: Times Roman. */
     private final PDType1Font regular = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
+    /** The bold font: Times Bold. */
     private final PDType1Font bold = new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
+    /** The italic font: Times Italic. */
     private final PDType1Font italic = new PDType1Font(Standard14Fonts.FontName.TIMES_ITALIC);
+    /** The most pages the PDF may have. */
     private final int maxPages;
+    /** The drawing stream for the current page. */
     private PDPageContentStream stream;
+    /** How far down the page drawing has reached. */
     private float y;
 
+    /**
+    Creates a document with its first page.
+
+    @param maxPages the most pages the PDF may have
+    @throws IOException if the file cannot be read or written
+    */
     public PdfCanvas(int maxPages) throws IOException {
         this.maxPages = maxPages;
         document.getDocumentCatalog().setLanguage("en");
         newPage();
     }
 
+    /**
+    Sets the title and author shown in the PDF's properties.
+
+    @param title the title
+    @param author the author shown in the PDF properties
+    */
     public void setDocumentTitle(String title, String author) {
         PDDocumentInformation information = new PDDocumentInformation();
         information.setTitle(title);
@@ -46,26 +81,57 @@ public class PdfCanvas implements AutoCloseable {
         document.setDocumentInformation(information);
     }
 
+    /**
+    Gives the width between the margins.
+
+    @return the width in points
+    */
     public float contentWidth() {
         return PAGE_SIZE.getWidth() - 2 * MARGIN;
     }
 
+    /**
+    Gives the left margin.
+
+    @return the x position in points
+    */
     public float left() {
         return MARGIN;
     }
 
+    /**
+    Gives how far down the page drawing has reached.
+
+    @return the y position in points
+    */
     public float top() {
         return y;
     }
 
+    /**
+    Gives the number of pages.
+
+    @return the page count
+    */
     public int pageCount() {
         return document.getNumberOfPages();
     }
 
+    /**
+    Gives the space left above the bottom margin.
+
+    @return the height in points
+    */
     public float remainingHeight() {
         return y - MARGIN;
     }
 
+    /**
+    Works out how many table rows fit in the space left.
+
+    @param spaceToKeep space to leave free below, in points
+    @return the number of rows, never less than 0
+    */
     public int rowsThatFit(float spaceToKeep) {
         int rows = (int) ((remainingHeight() - spaceToKeep) / ROW_HEIGHT);
         if (rows < 0) {
@@ -74,6 +140,13 @@ public class PdfCanvas implements AutoCloseable {
         return rows;
     }
 
+    /**
+    Makes sure there is enough space, starting a new page if the page limit allows.
+
+    @param height the height needed, in points
+    @return true if there is space, false if the page limit was reached
+    @throws IOException if the file cannot be read or written
+    */
     public boolean ensureSpace(float height) throws IOException {
         if (remainingHeight() >= height) {
             return true;
@@ -85,10 +158,23 @@ public class PdfCanvas implements AutoCloseable {
         return true;
     }
 
+    /**
+    Moves the drawing position down.
+
+    @param height the height needed, in points
+    */
     public void moveDown(float height) {
         y = y - height;
     }
 
+    /**
+    Draws the centred title, subtitle and details line, then a divider.
+
+    @param title the title
+    @param subtitle the line under the title
+    @param details the line with the student ID and session times
+    @throws IOException if the file cannot be read or written
+    */
     public void header(String title, String subtitle, String details) throws IOException {
         float centre = MARGIN + contentWidth() / 2;
         writeCentred(title.toUpperCase(), bold, 22, centre, y - 22, HEADING);
@@ -100,6 +186,12 @@ public class PdfCanvas implements AutoCloseable {
         divider();
     }
 
+    /**
+    Draws a section heading in spaced capitals.
+
+    @param title the title
+    @throws IOException if the file cannot be read or written
+    */
     public void section(String title) throws IOException {
         y -= 16;
         stream.beginText();
@@ -113,6 +205,11 @@ public class PdfCanvas implements AutoCloseable {
         y -= 22;
     }
 
+    /**
+    Draws a thin line with a short orange bar on it.
+
+    @throws IOException if the file cannot be read or written
+    */
     public void divider() throws IOException {
         y -= 6;
         line(MARGIN, y, MARGIN + contentWidth(), y, RULE, 0.75f);
@@ -122,15 +219,42 @@ public class PdfCanvas implements AutoCloseable {
         y -= 4;
     }
 
+    /**
+    Draws a caption in italics.
+
+    @param x the left edge, in points
+    @param top the top edge, in points
+    @param text the text
+    @return the height used, in points
+    @throws IOException if the file cannot be read or written
+    */
     public float caption(float x, float top, String text) throws IOException {
         write(text, italic, TEXT_SIZE, x, top - TEXT_SIZE, SOFT_TEXT);
         return 14;
     }
 
+    /**
+    Draws a note in italics across the page.
+
+    @param text the text
+    @throws IOException if the file cannot be read or written
+    */
     public void note(String text) throws IOException {
         y -= caption(MARGIN, y, fit(text, italic, TEXT_SIZE, contentWidth()));
     }
 
+    /**
+    Draws a table with a shaded heading row.
+
+    @param x the left edge, in points
+    @param top the top edge, in points
+    @param width the width, in points
+    @param headers the column headings
+    @param rows the table rows
+    @param columnShares the share of the width each column gets
+    @return the height used, in points
+    @throws IOException if the file cannot be read or written
+    */
     public float table(float x, float top, float width, List<String> headers, List<List<String>> rows, float[] columnShares) throws IOException {
         float[] widths = new float[columnShares.length];
         for (int i = 0; i < widths.length; i++) {
@@ -146,6 +270,18 @@ public class PdfCanvas implements AutoCloseable {
         return top - rowTop;
     }
 
+    /**
+    Draws a horizontal bar chart.
+
+    @param x the left edge, in points
+    @param top the top edge, in points
+    @param width the width, in points
+    @param labels the label for each value
+    @param values the values to draw
+    @param barColor the colour of the bars
+    @return the height used, in points
+    @throws IOException if the file cannot be read or written
+    */
     public float bars(float x, float top, float width, List<String> labels, List<Integer> values, Color barColor) throws IOException {
         float labelWidth = width * 0.42f;
         float maxBar = width - labelWidth - 26;
@@ -172,6 +308,18 @@ public class PdfCanvas implements AutoCloseable {
         return top - rowTop;
     }
 
+    /**
+    Draws a pie chart with a legend.
+
+    @param x the left edge, in points
+    @param top the top edge, in points
+    @param radius the radius, in points
+    @param labels the label for each value
+    @param values the values to draw
+    @param colors the colour of each slice
+    @return the height used, in points
+    @throws IOException if the file cannot be read or written
+    */
     public float pie(float x, float top, float radius, List<String> labels, List<Double> values, List<Color> colors) throws IOException {
         double total = 0;
         for (int i = 0; i < values.size(); i++) {
@@ -208,6 +356,12 @@ public class PdfCanvas implements AutoCloseable {
         return 2 * radius + 8;
     }
 
+    /**
+    Draws the footer text and the page number on every page.
+
+    @param text the text
+    @throws IOException if the file cannot be read or written
+    */
     public void footerOnEveryPage(String text) throws IOException {
         closeStream();
         int pageNumber = 1;
@@ -241,17 +395,34 @@ public class PdfCanvas implements AutoCloseable {
         }
     }
 
+    /**
+    Saves the PDF.
+
+    @param file the file to write
+    @throws IOException if the file cannot be read or written
+    */
     public void save(Path file) throws IOException {
         closeStream();
         document.save(file.toFile());
     }
 
+    /**
+    Frees the document's resources.
+
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     public void close() throws IOException {
         closeStream();
         document.close();
     }
 
+    /**
+    Replaces characters the built-in fonts cannot show.
+
+    @param text the text
+    @return text that is safe to draw
+    */
     static String sanitise(String text) {
         if (text == null) {
             return "";
@@ -268,6 +439,12 @@ public class PdfCanvas implements AutoCloseable {
         return out;
     }
 
+    /**
+    Gives the character to use instead of one the fonts cannot show.
+
+    @param c the character
+    @return the plain character to print instead
+    */
     private static char replacementFor(char c) {
         if (c == '\t' || c == '\n' || c == '\r') {
             return ' ';
@@ -275,6 +452,16 @@ public class PdfCanvas implements AutoCloseable {
         return '?';
     }
 
+    /**
+    Shortens text with "..." so it fits the width.
+
+    @param text the text
+    @param font the font used
+    @param size the text size
+    @param width the width, in points
+    @return the text, shortened if needed
+    @throws IOException if the file cannot be read or written
+    */
     String fit(String text, PDType1Font font, float size, float width) throws IOException {
         String clean = sanitise(text);
         if (textWidth(clean, font, size) <= width) {
@@ -287,6 +474,18 @@ public class PdfCanvas implements AutoCloseable {
         return shortened + "...";
     }
 
+    /**
+    Draws one table row.
+
+    @param x the left edge, in points
+    @param top the top edge, in points
+    @param width the width, in points
+    @param cells the text for each cell
+    @param widths the width of each column
+    @param font the font to use
+    @param header true for the header row, which is drawn in bold
+    @throws IOException if the file cannot be read or written
+    */
     private void tableRow(float x, float top, float width, List<String> cells, float[] widths, PDType1Font font, boolean header) throws IOException {
         if (header) {
             stream.setNonStrokingColor(HEADER_FILL);
@@ -311,6 +510,17 @@ public class PdfCanvas implements AutoCloseable {
         line(x, top - ROW_HEIGHT, x + width, top - ROW_HEIGHT, lineColour, lineWidth);
     }
 
+    /**
+    Draws one slice of the pie chart.
+
+    @param cx the x position of the centre
+    @param cy the y position of the centre
+    @param r the radius
+    @param start the start of the session in epoch milliseconds
+    @param sweep how far the wedge turns, in degrees
+    @param color the colour to use
+    @throws IOException if the file cannot be read or written
+    */
     private void wedge(float cx, float cy, float r, double start, double sweep, Color color) throws IOException {
         stream.setNonStrokingColor(color);
         stream.moveTo(cx, cy);
@@ -323,6 +533,14 @@ public class PdfCanvas implements AutoCloseable {
         stream.fill();
     }
 
+    /**
+    Draws the outline of the pie chart.
+
+    @param cx the x position of the centre
+    @param cy the y position of the centre
+    @param r the radius
+    @throws IOException if the file cannot be read or written
+    */
     private void circleOutline(float cx, float cy, float r) throws IOException {
         stream.moveTo(cx + r, cy);
         for (int i = 1; i <= 180; i++) {
@@ -332,6 +550,17 @@ public class PdfCanvas implements AutoCloseable {
         stream.stroke();
     }
 
+    /**
+    Draws a line.
+
+    @param x1 the x position of the start
+    @param y1 the y position of the start
+    @param x2 the x position of the end
+    @param y2 the y position of the end
+    @param colour the colour to use
+    @param width the width, in points
+    @throws IOException if the file cannot be read or written
+    */
     private void line(float x1, float y1, float x2, float y2, Color colour, float width) throws IOException {
         stream.setStrokingColor(colour);
         stream.setLineWidth(width);
@@ -340,10 +569,32 @@ public class PdfCanvas implements AutoCloseable {
         stream.stroke();
     }
 
+    /**
+    Draws text centred on a position.
+
+    @param text the text
+    @param font the font to use
+    @param size the font size in points
+    @param centre the x position of the centre of the text
+    @param baseline the y position of the text baseline
+    @param color the colour to use
+    @throws IOException if the file cannot be read or written
+    */
     private void writeCentred(String text, PDType1Font font, float size, float centre, float baseline, Color color) throws IOException {
         write(text, font, size, centre - textWidth(sanitise(text), font, size) / 2, baseline, color);
     }
 
+    /**
+    Draws text starting at a position.
+
+    @param text the text
+    @param font the font to use
+    @param size the font size in points
+    @param x the left edge, in points
+    @param baseline the y position of the text baseline
+    @param color the colour to use
+    @throws IOException if the file cannot be read or written
+    */
     private void write(String text, PDType1Font font, float size, float x, float baseline, Color color) throws IOException {
         stream.beginText();
         stream.setFont(font, size);
@@ -353,10 +604,24 @@ public class PdfCanvas implements AutoCloseable {
         stream.endText();
     }
 
+    /**
+    Measures the width of some text.
+
+    @param text the text
+    @param font the font to use
+    @param size the font size in points
+    @return the width of the text in points
+    @throws IOException if the file cannot be read or written
+    */
     private static float textWidth(String text, PDType1Font font, float size) throws IOException {
         return font.getStringWidth(text) / 1000 * size;
     }
 
+    /**
+    Starts a new page.
+
+    @throws IOException if the file cannot be read or written
+    */
     private void newPage() throws IOException {
         closeStream();
         PDPage page = new PDPage(PAGE_SIZE);
@@ -365,6 +630,11 @@ public class PdfCanvas implements AutoCloseable {
         y = PAGE_SIZE.getHeight() - MARGIN;
     }
 
+    /**
+    Closes the drawing stream for the current page.
+
+    @throws IOException if the file cannot be read or written
+    */
     private void closeStream() throws IOException {
         if (stream != null) {
             stream.close();
@@ -384,4 +654,5 @@ Oracle. The Java Tutorials: Learning the Java Language (access control, inherita
 CV Genius (n.d.). Computer Science CV Example (layout model for the report). https://cvgenius.com/
 W3C (2018). Web Content Accessibility Guidelines (WCAG) 2.1: 1.4.1 Use of Color and 1.4.3 Contrast (Minimum). https://www.w3.org/TR/WCAG21/
 Oracle. The Java Tutorials: Exceptions (Catching and Handling Exceptions). https://docs.oracle.com/javase/tutorial/essential/exceptions/handling.html
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */

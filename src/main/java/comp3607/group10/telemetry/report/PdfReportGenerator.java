@@ -14,28 +14,61 @@ import comp3607.group10.telemetry.analytics.StatisticsCalculator;
 import comp3607.group10.telemetry.analytics.TimelineEntry;
 import comp3607.group10.telemetry.model.TelemetryEvent;
 
+/**
+A concrete class of the Template Method pattern that draws the one-page PDF report: a header,
+then active versus idle time, the frequency of compilation errors, and the class and method
+timeline, each as a table and a chart.
+
+@author Reinaldo Singh
+*/
 public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
+    /** The PDF is limited to one page. */
     public static final int MAX_PAGES = 1;
+    /** The most error types listed in the table and chart. */
     static final int MAX_ERROR_ROWS = 5;
 
+    /** The colour for active time. */
     private static final Color ACTIVE = new Color(214, 96, 20);
+    /** The colour for idle time. */
     private static final Color IDLE = new Color(250, 204, 60);
+    /** The colour of the error bars. */
     private static final Color ERROR_BAR = new Color(230, 126, 34);
 
+    /** The time zone used for readable times. */
     private final ZoneId zone;
+    /** The extension version shown in the footer. */
     private final String pluginVersion;
 
+    /**
+    Creates the PDF generator.
+
+    @param calculator works out the statistics from the events
+    @param zone the time zone used for readable times and file names
+    @param pluginVersion the extension version shown in the footer
+    */
     public PdfReportGenerator(StatisticsCalculator calculator, ZoneId zone, String pluginVersion) {
         super(calculator);
         this.zone = zone;
         this.pluginVersion = pluginVersion;
     }
 
+    /**
+    Gives the PDF file extension.
+
+    @return "pdf"
+    */
     @Override
     public String fileExtension() {
         return "pdf";
     }
 
+    /**
+    Step: creates an empty one-page document with its title and author.
+
+    @param statistics the statistics calculated for the session
+    @return the new document
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected PdfCanvas createDocument(SessionStatistics statistics) throws IOException {
         PdfCanvas pdf = new PdfCanvas(MAX_PAGES);
@@ -43,6 +76,13 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return pdf;
     }
 
+    /**
+    Step: draws the header and the active versus idle time section.
+
+    @param pdf the PDF being drawn
+    @param s the statistics calculated for the session
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void addSummary(PdfCanvas pdf, SessionStatistics s) throws IOException {
         pdf.header("BlueJ Coding Session Report", projectLine(s.getProjectNames()), "Student ID: " + s.getStudentId() + "   |   " + Timestamps.readable(s.getSessionStartMillis(), zone) + " to " + Timestamps.readable(s.getSessionEndMillis(), zone) + "   |   Duration: " + minutes(s.getSessionDurationSec()));
@@ -70,6 +110,14 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         pdf.divider();
     }
 
+    /**
+    Step: draws the compilation error section and the timeline section.
+
+    @param pdf the PDF being drawn
+    @param s the statistics calculated for the session
+    @param events the events recorded in the session
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void addDetails(PdfCanvas pdf, SessionStatistics s, List<TelemetryEvent> events) throws IOException {
         float half = (pdf.contentWidth() - 24) / 2;
@@ -103,21 +151,49 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         addTimeline(pdf, s.getTimeline(), half);
     }
 
+    /**
+    Hook: draws the footer.
+
+    @param pdf the PDF being drawn
+    @param s the statistics calculated for the session
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void addFooter(PdfCanvas pdf, SessionStatistics s) throws IOException {
         pdf.footerOnEveryPage("BlueJ Telemetry Extension " + pluginVersion);
     }
 
+    /**
+    Step: saves the PDF.
+
+    @param pdf the PDF being drawn
+    @param file the file to write
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void save(PdfCanvas pdf, Path file) throws IOException {
         pdf.save(file);
     }
 
+    /**
+    Hook: frees the PDF's resources.
+
+    @param pdf the PDF being drawn
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void close(PdfCanvas pdf) throws IOException {
         pdf.close();
     }
 
+    /**
+    Draws the timeline table, with as many rows as fit, and the classes versus methods chart.
+
+    @param pdf the PDF being drawn
+    @param timeline the class and method timeline
+    @param half half the usable page width
+    @throws IOException if the file cannot be read or written
+    */
     private void addTimeline(PdfCanvas pdf, List<TimelineEntry> timeline, float half) throws IOException {
         if (timeline.isEmpty()) {
             pdf.note("No classes or methods were created in this session.");
@@ -156,6 +232,12 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         }
     }
 
+    /**
+    Makes the line under the title that names the project or projects.
+
+    @param projectNames the names of the projects opened
+    @return for example "BlueJ project: Shapes"
+    */
     static String projectLine(List<String> projectNames) {
         if (projectNames.isEmpty()) {
             return "BlueJ project: not recorded";
@@ -174,6 +256,13 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return label + names;
     }
 
+    /**
+    Gives a count as a percentage of a total.
+
+    @param count how many times it happened
+    @param total the total
+    @return for example "25%", or "0%" when the total is 0
+    */
     static String share(int count, int total) {
         if (total == 0) {
             return "0%";
@@ -181,6 +270,12 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return percent((double) count / total);
     }
 
+    /**
+    Turns an error code into words, for example MISSING_SEMICOLON into "Missing semicolon".
+
+    @param errorCode the error code
+    @return the readable name
+    */
     static String readableName(String errorCode) {
         String lower = errorCode.replace('_', ' ').toLowerCase();
         if (lower.isEmpty()) {
@@ -189,6 +284,12 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return lower.substring(0, 1).toUpperCase() + lower.substring(1);
     }
 
+    /**
+    Gives the share of the session that was idle.
+
+    @param activity the active and idle time
+    @return a value from 0 to 1
+    */
     static double idleShare(ActivityStats activity) {
         long total = activity.getActiveTimeSec() + activity.getIdleTimeSec();
         if (total == 0) {
@@ -197,10 +298,22 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return (double) activity.getIdleTimeSec() / total;
     }
 
+    /**
+    Formats a fraction as a whole percentage.
+
+    @param fraction a value from 0 to 1
+    @return for example "41%"
+    */
     static String percent(double fraction) {
         return Math.round(fraction * 100) + "%";
     }
 
+    /**
+    Formats seconds as minutes and seconds.
+
+    @param seconds the number of seconds
+    @return for example "3 min 05 s"
+    */
     static String minutes(long seconds) {
         long secondsLeft = seconds % 60;
         String padding = "";
@@ -210,6 +323,13 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return (seconds / 60) + " min " + padding + secondsLeft + " s";
     }
 
+    /**
+    Makes a table row with two cells.
+
+    @param first the first cell
+    @param second the second cell
+    @return the cells for one table row
+    */
     private static List<String> row(String first, String second) {
         List<String> row = new ArrayList<String>();
         row.add(first);
@@ -217,6 +337,14 @@ public class PdfReportGenerator extends AbstractReportGenerator<PdfCanvas> {
         return row;
     }
 
+    /**
+    Makes a table row with three cells.
+
+    @param first the first cell
+    @param second the second cell
+    @param third the third cell
+    @return the cells for one table row
+    */
     private static List<String> row(String first, String second, String third) {
         List<String> row = row(first, second);
         row.add(third);
@@ -234,4 +362,5 @@ Oracle. The Java Tutorials: Learning the Java Language (access control, inherita
 The Apache Software Foundation. Apache PDFBox 3.0. https://pdfbox.apache.org/
 CV Genius (n.d.). Computer Science CV Example (layout model for the report). https://cvgenius.com/
 W3C (2018). Web Content Accessibility Guidelines (WCAG) 2.1: 1.4.1 Use of Color and 1.4.3 Contrast (Minimum). https://www.w3.org/TR/WCAG21/
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */

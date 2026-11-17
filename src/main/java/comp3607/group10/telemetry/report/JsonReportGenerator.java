@@ -19,20 +19,44 @@ import comp3607.group10.telemetry.analytics.StatisticsCalculator;
 import comp3607.group10.telemetry.model.EventTimeComparator;
 import comp3607.group10.telemetry.model.TelemetryEvent;
 
+/**
+A concrete class of the Template Method pattern that writes the session as a JSON file with Gson:
+a schema version, the metadata block and the event log in time order.
+
+@author Reinaldo Singh
+*/
 public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
+    /** The version of the JSON layout. */
     public static final int SCHEMA_VERSION = 1;
 
+    /** Writes indented JSON and keeps null values. */
     private final Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
+    /**
+    Creates the JSON generator.
+
+    @param calculator works out the statistics from the events
+    */
     public JsonReportGenerator(StatisticsCalculator calculator) {
         super(calculator);
     }
 
+    /**
+    Gives the JSON file extension.
+
+    @return "json"
+    */
     @Override
     public String fileExtension() {
         return "json";
     }
 
+    /**
+    Step: creates the JSON document with its schema version.
+
+    @param statistics the statistics calculated for the session
+    @return the new document
+    */
     @Override
     protected JsonObject createDocument(SessionStatistics statistics) {
         JsonObject root = new JsonObject();
@@ -40,11 +64,24 @@ public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
         return root;
     }
 
+    /**
+    Step: adds the metadata block.
+
+    @param document the document being built
+    @param statistics the statistics calculated for the session
+    */
     @Override
     protected void addSummary(JsonObject document, SessionStatistics statistics) {
         document.add("metadata", gson.toJsonTree(toMetadata(statistics)));
     }
 
+    /**
+    Step: adds every event, sorted by time.
+
+    @param document the document being built
+    @param statistics the statistics calculated for the session
+    @param events the events recorded in the session
+    */
     @Override
     protected void addDetails(JsonObject document, SessionStatistics statistics, List<TelemetryEvent> events) {
         JsonArray array = new JsonArray();
@@ -56,6 +93,13 @@ public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
         document.add("events", array);
     }
 
+    /**
+    Step: writes the JSON to the file.
+
+    @param document the document being built
+    @param file the file to write
+    @throws IOException if the file cannot be read or written
+    */
     @Override
     protected void save(JsonObject document, Path file) throws IOException {
         Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8);
@@ -68,6 +112,12 @@ public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
         }
     }
 
+    /**
+    Turns the statistics into the metadata block.
+
+    @param s the statistics calculated for the session
+    @return the metadata
+    */
     static JsonMetadata toMetadata(SessionStatistics s) {
         JsonMetadata m = new JsonMetadata();
         m.studentID = s.getStudentId();
@@ -87,6 +137,12 @@ public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
         return m;
     }
 
+    /**
+    Turns an event into its JSON shape.
+
+    @param event the telemetry event
+    @return the JSON event
+    */
     static JsonEvent toJsonEvent(TelemetryEvent event) {
         JsonEvent e = new JsonEvent();
         e.type = event.getType().name();
@@ -96,6 +152,12 @@ public class JsonReportGenerator extends AbstractReportGenerator<JsonObject> {
         return e;
     }
 
+    /**
+    Rounds a number to two decimal places.
+
+    @param value the detail value
+    @return the value rounded to two decimal places
+    */
     private static double round(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
@@ -111,4 +173,5 @@ Oracle. Java SE 21 API Specification. https://docs.oracle.com/en/java/javase/21/
 Oracle. The Java Tutorials: Learning the Java Language (access control, inheritance and super, primitive data types, generics). https://docs.oracle.com/javase/tutorial/java/
 COMP 3607 (n.d.). Lab tutorials and code samples: Command (Light, LightOnCommand, RemoteControl), Week 6 Demo (Composite), Week 7 (Patient), Interface Segregation Principle (Door, TimedDoor) and Coffee Machine (SOLID).
 Oracle. The Java Tutorials: Exceptions (Catching and Handling Exceptions). https://docs.oracle.com/javase/tutorial/essential/exceptions/handling.html
+Oracle. How to Write Doc Comments for the Javadoc Tool. https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html
 */
